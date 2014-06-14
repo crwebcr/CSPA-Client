@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Seasonal adjustment</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+<link href="img/jdemetra.ico" rel="icon"/>
+<script type="text/JavaScript" src="jquery-1.11.1.min.js"></script> 
+<script type="text/JavaScript" src="jquery.csv-0.71.min.js"></script>
+<script type="text/JavaScript" src="d3.v3.min.js"></script>
+</head>
+<body>
+
+
+<div id="frame">
+<div id="title">Seasonal adjustment</div>
+
+<div id="specTitle" class="subTitle">&gt; Specifications</div>
+
+<div id="method"><table><tr>
+	<td>Method : &nbsp;</td>
+	<td><select id='methodSelect' onChange="javascript:changeMethod();">
+		<option value='ts' selected>Tramoseats</option>
+		<option value='x13'>X13</option>
+	</select></td> 
+</tr></table></div>
+
+<div id="prespec"><table><tr>
+	<td>Base specification : &nbsp;</td>
+	<td><select id='prespecSelect' onChange="javascript:changePrespec();">
+		<option value='RSA0'>RSA0</option>
+		<option value='RSA1'>RSA1</option>
+		<option value='RSA2'>RSA2</option>
+		<option value='RSA3'>RSA3</option>
+		<option value='RSA4'>RSA4</option>
+		<option value='RSA5'>RSA5</option>
+	</select></td> 
+</tr></table></div>
+
+<div id="tabSpec"><table class="tabs"><tr>
+	<td><ul id="spec1" class="tabPassive"><li><a href="javascript:spec(1);" title="sets transformation">Transformation</a></li></ul></td>
+	<td><ul id="spec2" class="tabPassive"><li><a href="javascript:spec(2);" title="sets model">Model</a></li></ul></td>
+	<td><ul id="spec3" class="tabPassive"><li><a href="javascript:spec(3);" title="sets outliers">Outliers</a></li></ul></td>
+	<td><ul id="spec4" class="tabPassive"><li><a href="javascript:spec(4);" title="sets calendar">Calendar</a></li></ul></td>
+	<td><ul id="spec5" class="tabPassive"><li><a href="javascript:spec(5);" title="uses specific outliers">User outiers</a></li></ul></td>
+	<td><ul id="spec6" class="tabPassive"><li><a href="javascript:spec(6);" title="selects outputs">Outputs</a></li></ul></td>
+</tr></table></div>
+
+<div id='ts1' class='parameters'>
+  <div id='tstransform'><table><tr title="None: no transformation of data; Log: takes log of data; Auto: the program tests for the log-level specification">
+	<td> Function : &nbsp;</td>
+    <td> <select id='ts-transformSpec'>
+      <option value='level' selected='selected'>None</option>
+      <option value='log'>Log</option>
+      <option value='auto'>Auto</option>
+    </select></td>
+  </tr></table></div>
+</div>
+
+<div id='ts2' class='parameters'>
+  <div id='tsautoModel'><table><tr title="enables auto-modeling">
+	<td> Automatic : </td>
+    <td> <input type="checkbox" id="ts-autoModelSpec" value="true" checked="checked" onChange="javascript:changeAutoModel('ts');"></td>
+  </tr></table></div>
+  <div id='tsarima'>
+    <div id='tsarima1'><table>
+      <tr title="regular auto-regressive order"><td>p : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-p"></td></tr>
+      <tr title="regular differencing order"><td>d : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-d"></td></tr>
+      <tr title="regular moving average order"><td>q : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-q"></td></tr>
+    </table></div>
+    <div id='tsarima2'><table>
+      <tr title="seasonal auto-regressive order"><td>bp : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-bp"></td></tr>
+      <tr title="seasonal differencing order"><td>bd : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-bd"></td></tr>
+      <tr title="seasonal moving average order"><td>bq : &nbsp;</td> <td><input type="text" id="ts-arimaSpec-spec-bq"></td></tr>
+    </table></div>
+    <div id='tsarima3'><table><tr title="mean correction">
+      <td> Mean : </td>
+      <td> <input type="checkbox" id="ts-arimaSpec-spec-mean" value="true"></td>
+    </tr></table></div>
+  </div>
+</div>
+
+<div id="ts3" class="parameters">
+  <div id='tsoutlier'><table>
+    <tr title="additive outlier"><td> Additive : </td> <td><input type="checkbox" id="ts-outlierSpec-types-ao" value="AO"></td></tr>
+    <tr title="level shift"><td> Level shift : </td> <td><input type="checkbox" id="ts-outlierSpec-types-ls" value="LS"></td></tr>
+    <tr title="transitory change"><td> Transitory : </td> <td><input type="checkbox" id="ts-outlierSpec-types-tc" value="TC"></td></tr> 
+  </table></div>
+</div>
+
+<div id="ts4" class="parameters">
+  <div id='tscaloption'><table><tr title="selects trading days option">
+    <td>Calendar : &nbsp;</td>
+    <td><select id='ts-calendarSpec-option' onChange="javascript:changeCalendarOption('ts');">
+      <option value='none' selected='selected'>None</option>
+      <option value='default'>Default</option>
+    </select></td>
+  </tr></table></div>
+  <div id='tscaldetail'><table>
+    <tr title="selects regressors for trading days"><td>Regressors : &nbsp;</td>
+      <td><select id="ts-calendarSpec-tdOption">
+        <option value='TradingDays' selected='selected'>Trading days</option>
+        <option value='WorkingDays'>Working days</option>
+      </select></td>
+    </tr>
+    <tr title="uses leap year regression variable"><td>Leap year :</td> <td><input type="checkbox" id="ts-calendarSpec-lpOption" value="LeapYear"></td></tr>
+    <tr title="performs test"><td>Pretest :</td> <td><input type="checkbox" id="ts-calendarSpec-pretest" value="Separate_T"></td></tr> 
+  </table></div>
+  <div id='tseastoption'><table><tr title="selects Easter effect option">
+    <td>Easter : &nbsp;</td>
+    <td><select id='ts-calendarSpec-movingHolidays-easter-option' onChange="javascript:changeEasterOption('ts');">
+      <option value='none' selected='selected'>None</option>
+      <option value='use'>In use</option>
+    </select></td>
+  </tr></table></div> 
+  <div id='tseastdetail'><table>
+    <tr title="length in days of the Easter effect"><td>Duration : &nbsp;</td> <td><input type="text" id="ts-calendarSpec-movingHolidays-easter-duration"></td></tr>
+    <tr title="performs test"><td>Pretest :</td> <td><input type="checkbox" id="ts-calendarSpec-movingHolidays-easter-pretest" value="true"></td></tr> 
+  </table></div>
+</div>
+
+<div id="ts5">Tramoseats user outliers</div>
+<div id="ts6">Tramoseats outputs</div>
+
+<div id="x131" class="parameters">
+  <div id='x13transform'><table><tr title="None: no transformation of data; Log: takes log of data; Auto: the program tests for the log-level specification">
+	<td> Function : &nbsp;</td>
+    <td> <select id='x13-transformSpec'>
+      <option value='level' selected='selected'>None</option>
+      <option value='log'>Log</option>
+      <option value='auto'>Auto</option>
+    </select></td>
+  </tr></table></div>
+</div>
+
+<div id='x132' class='parameters'>
+  <div id='x13autoModel'><table><tr title="enables auto-modeling">
+	<td> Automatic : </td>
+    <td> <input type="checkbox" id="x13-autoModelSpec" value="true" checked="checked" onChange="javascript:changeAutoModel('x13');"></td>
+  </tr></table></div>
+  <div id='x13arima'>
+    <div id='x13arima1'><table>
+      <tr title="regular auto-regressive order"><td>p : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-p"></td></tr>
+      <tr title="regular differencing order"><td>d : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-d"></td></tr>
+      <tr title="regular moving average order"><td>q : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-q"></td></tr>
+    </table></div>
+    <div id='x13arima2'><table>
+      <tr title="seasonal auto-regressive order"><td>bp : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-bp"></td></tr>
+      <tr title="seasonal differencing order"><td>bd : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-bd"></td></tr>
+      <tr title="seasonal moving average order"><td>bq : &nbsp;</td> <td><input type="text" id="x13-arimaSpec-spec-bq"></td></tr>
+    </table></div>
+    <div id='x13arima3'><table><tr title="mean correction">
+      <td> Mean : </td>
+      <td> <input type="checkbox" id="x13-arimaSpec-spec-mean" value="true"></td>
+    </tr></table></div>
+  </div>
+</div>
+
+<div id="x133" class="parameters">
+  <div id='tsoutlier'><table>
+    <tr title="additive outlier"><td> Additive : </td> <td><input type="checkbox" id="ts-outlierSpec-types-ao" value="AO"></td></tr>
+    <tr title="level shift"><td> Level shift : </td> <td><input type="checkbox" id="ts-outlierSpec-types-ls" value="LS"></td></tr>
+    <tr title="transitory change"><td> Transitory : </td> <td><input type="checkbox" id="ts-outlierSpec-types-tc" value="TC"></td></tr> 
+  </table></div>
+</div>
+
+<div id="x134" class="parameters">
+  <div id='x13caloption'><table><tr title="selects trading days option">
+    <td>Calendar : &nbsp;</td>
+    <td><select id='x13-calendarSpec-option' onChange="javascript:changeCalendarOption('x13');">
+      <option value='none' selected='selected'>None</option>
+      <option value='default'>Default</option>
+    </select></td>
+  </tr></table></div>
+  <div id='x13caldetail'><table>
+    <tr title="selects regressors for trading days"><td>Regressors : &nbsp;</td>
+      <td><select id="x13-calendarSpec-tdOption">
+        <option value='TradingDays' selected='selected'>Trading days</option>
+        <option value='WorkingDays'>Working days</option>
+      </select></td>
+    </tr>
+    <tr title="uses leap year regression variable"><td>Leap year :</td> <td><input type="checkbox" id="x13-calendarSpec-lpOption" value="LeapYear"></td></tr>
+    <tr title="performs test"><td>Pretest :</td> <td><input type="checkbox" id="x13-calendarSpec-pretest" value="Separate_T"></td></tr> 
+  </table></div>
+  <div id='x13eastoption'><table><tr title="selects Easter effect option">
+    <td>Easter : &nbsp;</td>
+    <td><select id='x13-calendarSpec-movingHolidays-easter-option' onChange="javascript:changeEasterOption('x13');">
+      <option value='none' selected='selected'>None</option>
+      <option value='use'>In use</option>
+    </select></td>
+  </tr></table></div> 
+  <div id='x13eastdetail'><table>
+    <tr title="length in days of the Easter effect"><td>Duration : &nbsp;</td> <td><input type="text" id="x13-calendarSpec-movingHolidays-easter-w"></td></tr>
+    <tr title="performs test"><td>Pretest :</td> <td><input type="checkbox" id="x13-calendarSpec-movingHolidays-easter-aicTest" value="Add"></td></tr> 
+  </table></div>
+</div>
+
+<div id="x135">X13 user outliers</div>
+<div id="x136">X13 outputs</div>
+
+<div id="seriesTitle" class="subTitle">&gt; Time series</div>
+<div id="loadSeries"> 
+	<input type = "button" value = "Select series" onclick ="javascript:selectSeries();"/>
+	<input type= "file" id="selectSeries" onChange="javascript:loadSeries();" class="inputFile"/>
+</div>
+<div id="loadSpinner"><img height="25px" width="25px" src="img/spinner.gif"/></div>
+<div id="loadName" onClick="javascript:showSeries();"></div>
+<div id="adjust"><input type = "button" value = "Seasonal adjust" onclick ="javascript:adjust();"/></div>
+<div id="adjustSpinner"><img height="25px" width="25px" src="img/spinner.gif"/></div>
+
+
+
+
+<div id="resultsTitle" class="subTitle">&gt; Results</div>
+
+<div id="tabResults"><table class="tabs"><tr>
+	<td><ul id="result1" class="tabPassive"><li><a href="javascript:result(1);" title="see adjusted series">Adjusted series</a></li></ul></td>
+	<td><ul id="result2" class="tabPassive"><li><a href="javascript:result(2);" title="see statistical tests">Statistical tests</a></li></ul></td>
+	<td><ul id="result3" class="tabPassive"><li><a href="javascript:result(3);" title="see arima parmaters">Arima</a></li></ul></td>
+</tr></table></div>
+<div id="res1">Adjusted series</div>
+<div id="res2">Statistical tests</div>
+<div id="res3">Arima</div>
+
+
+<div id="graph"></div>
+
+
+
+</div>
+
+<script type="text/JavaScript" src="scripts.js"></script> 
+</body>
+</html>
